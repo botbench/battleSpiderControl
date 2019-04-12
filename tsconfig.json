@@ -1,0 +1,36 @@
+/*----------------------------------------------------------------------------*/
+/*                                                                            */
+/*    Copyright (c) VEX 2017, All rights reserved.                         	  */
+/*                                                                            */
+/*    Module:     tsconfig.ts                                                 */
+/*    Author:     Xander Soldaat                                              */
+/*    Created:    June 2017                                                   */
+/*                                                                            */
+/*----------------------------------------------------------------------------*/
+
+{
+    "compilerOptions": {
+        "target": "es6",
+        "noImplicitAny": true,
+        "sourceMap": false,
+        "outDir": "www/build",
+        "declaration": false,
+        "watch": true,
+        "noUnusedParameters": true,
+        "noUnusedLocals": true,
+        "removeComments": true,
+        "alwaysStrict": true,
+        "noImplicitReturns": true,
+        "skipLibCheck": true
+    },
+    "include": [
+        "www/**/*.ts"
+    ],
+    "exclude": [
+        "lib",
+        "**/*.js",
+        "node_modules",
+        "build",
+        "build_d",
+    ]
+}
