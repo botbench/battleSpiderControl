@@ -1,3 +1,4 @@
 platforms/
 node_modules/
 plugins/
+www/build
