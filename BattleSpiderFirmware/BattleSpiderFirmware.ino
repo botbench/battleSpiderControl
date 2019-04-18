@@ -171,9 +171,9 @@ void loop(void)
     // Get the current time
     unsigned long currentTime = millis();
 
-    // Check if more than 100ms has elapsed since the last message,
+    // Check if more than 200ms has elapsed since the last message,
     // if so, stop
-    if ( ( currentTime - startTime ) > 100 )
+    if ( ( currentTime - startTime ) > 300 )
     {
       doMotion ( 0 );
       doTurn ( 0 );
@@ -249,4 +249,3 @@ int serialToPWM ( char serialValue )
     case 8: return 255;
   }
 }
-
