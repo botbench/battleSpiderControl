@@ -1,0 +1,42 @@
+/*----------------------------------------------------------------------------*/
+/*                                                                            */
+/*    Copyright (c) Botbench 2019, All rights reserved.              	      */
+/*                                                                            */
+/*    Module:     joystick.css                                                */
+/*    Author:     Xander Soldaat                                              */
+/*    Created:    April 2019                                                  */
+/*                                                                            */
+/*----------------------------------------------------------------------------*/
+
+:root {
+    --joypadWidth: 20vh;
+    --joypadLength: 50vh;
+}
+
+
+#throttleSlider {
+    position: absolute;
+    left: 10vh;
+    top: calc(50vh - (var(--joypadLength) / 2));
+    width: var(--joypadWidth);
+    height: var(--joypadLength);
+}
+
+#turningSlider {
+    position: absolute;
+    right: 10vh;
+    top: calc(50vh - (var(--joypadWidth) / 2));
+    width: var(--joypadLength);
+    height: var(--joypadWidth);
+}
+
+.slider {
+    background-color: grey;
+    border-radius: calc(var(--joypadWidth) / 2);
+    border:3px solid white;
+}
+
+.joypadButton {
+    background: black;
+    border-radius: calc(var(--joypadWidth) / 2);
+}

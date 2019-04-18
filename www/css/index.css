@@ -1,0 +1,96 @@
+/*----------------------------------------------------------------------------*/
+/*                                                                            */
+/*    Copyright (c) Botbench 2019, All rights reserved.              	      */
+/*                                                                            */
+/*    Module:     index.cc                                                    */
+/*    Author:     Xander Soldaat                                              */
+/*    Created:    April 2019                                                  */
+/*                                                                            */
+/*----------------------------------------------------------------------------*/
+
+body 
+{
+    margin: 0px;
+    background-color: white; 
+    background: url("../img/spider.jpg");
+    background-size: 100vh 100vh;
+    background-position: top center; 
+    background-repeat: no-repeat;
+    overflow-y: hidden; 
+    overflow-x: hidden; 
+
+    /* Prevent copy and paste */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+            user-select: none; 
+
+}
+
+a:hover, a:visited, a:link, a:active
+{
+    text-decoration: none;
+    color: grey;
+}
+
+#tag 
+{
+    color: grey;
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    font-family: "Noto Sans", sans-serif;
+    font-size: 5vh;
+}
+
+#controlButton
+{
+    position: fixed;
+    height: 30vh;
+    width: 30vh;
+    top: 50%;
+    left: 50%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    border-radius: 15vh;
+    transform: translate(-50%, -50%);
+}
+
+#controlButton.start
+{
+    background-image: url("../img/play.png");
+}
+
+#controlButton.stop
+{
+    background-image: url("../img/stop.png");
+}
+
+#controlButton.pressed
+{
+    border:4px solid grey;
+    background-color: grey;
+}
+
+#controlButton.released
+{
+    border:3px solid white;
+    background-color: white;
+}
+
+#controlButton.fadeinout {
+    -webkit-animation: fadeinout 0.4s infinite alternate;
+    animation: fadeinout 0.4s infinite alternate;
+}
+
+@-webkit-keyframes fadeinout {
+    100% { -webkit-filter: brightness(80%); }
+}
+
+@keyframes fadeinout {
+    100% {
+        -moz-filter: brightness(80%);
+        -o-filter: brightness(80%);
+        filter: brightness(80%);
+    }
+} 
