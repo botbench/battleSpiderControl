@@ -171,7 +171,7 @@ void loop(void)
     // Get the current time
     unsigned long currentTime = millis();
 
-    // Check if more than 200ms has elapsed since the last message,
+    // Check if more than 300ms has elapsed since the last message,
     // if so, stop
     if ( ( currentTime - startTime ) > 300 )
     {
