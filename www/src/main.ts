@@ -75,6 +75,7 @@ namespace com.botbench.battlespider
 
     /**
     * Connect to the Battle Spider via BLE
+    * @param {string} deviceID the BLE ID of the Battle Spider
     */
     function connectToBattleSpider ( deviceID: string )
     {
