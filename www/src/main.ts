@@ -15,14 +15,22 @@ let spiderDebug = true;
 
 namespace com.botbench.battlespider
 {
+    // The connenction state can only be one of these
+    enum tConnectionState
+    {
+        disconnected = 0,
+        connecting,
+        connected,
+        searching
+    }
+
+    let connectionState: tConnectionState;
+
     let bluefruitBLEInfo = {
         serviceUUID: '6e400001-b5a3-f393-e0a9-e50e24dcca9e',
         txCharacteristic: '6e400002-b5a3-f393-e0a9-e50e24dcca9e', // transmit is from the phone's perspective
         rxCharacteristic: '6e400003-b5a3-f393-e0a9-e50e24dcca9e'  // receive is from the phone's perspective
     };
-
-    let bConnecting = true;
-    let bConnected = true;
 
     let throttleValue = 0;
     let turningValue = 0;
@@ -51,9 +59,6 @@ namespace com.botbench.battlespider
 
         throttleValue = 0;
         turningValue = 0;
-        
-        bConnected = false;
-        bConnecting = false;
 
         transmitTimer = null;
 
@@ -66,11 +71,18 @@ namespace com.botbench.battlespider
             $ ( "#controlButton" ).removeClass ( "pressed" );
             $ ( "#controlButton" ).addClass ( "released" );
 
-            if ( bConnected )
+            // If we're connected, disconnect
+            if ( connectionState == tConnectionState.connected )
                 disconnectFromBattleSpider();
+            // If we're scanning, stop scanning
+            if ( connectionState == tConnectionState.searching )
+                stopSearchorBattleSpider()
+            // Otherwise, start scanning for a spider
             else
                 searchForBattleSpider();
         })
+
+        connectionState = tConnectionState.disconnected;
     }
 
     /**
@@ -79,8 +91,13 @@ namespace com.botbench.battlespider
     */
     function connectToBattleSpider ( deviceID: string )
     {
+        // There is a race condition possible. A new search result could come in and kick this off, before the state is changed.
+        connectionState = tConnectionState.connecting;
+
+        // If we're connecting, we should stop scanning
+        ble.stopScan();
+        
         ble.autoConnect ( deviceID, ( data: BLECentralPlugin.PeripheralDataExtended ) =>  handleConnectedSpider ( data ), () => handleDisconnectedSpider() );
-        bConnecting = true;
     }
 
     /**
@@ -100,12 +117,26 @@ namespace com.botbench.battlespider
     {
         utils.debugLog ( "searchForBattleSpider",  spiderDebug );
 
-        if ( bConnected || bConnecting )
+        if ( connectionState != tConnectionState.disconnected  )
             return;
 
-        ble.scan ( [ bluefruitBLEInfo.serviceUUID ], 5, ( device: BLECentralPlugin.PeripheralData ) => handleFoundBattleSpider ( device ) , () => showError ( "scan error") );
+        ble.startScan ( [ bluefruitBLEInfo.serviceUUID ], ( device: BLECentralPlugin.PeripheralData ) => handleFoundBattleSpider ( device ) , () => showError ( "scan error") );
+
+        connectionState = tConnectionState.searching;
 
         $ ( "#controlButton" ).addClass ( "fadeinout" );
+    }
+
+    /**
+    * Stop searching for a Battle Spider
+    */
+    function stopSearchorBattleSpider()
+    {
+        utils.debugLog ( "stopSearchorBattleSpider",  spiderDebug );
+
+        $ ( "#controlButton" ).removeClass ( "fadeinout" );
+        ble.stopScan();
+        connectionState = tConnectionState.disconnected;
     }
 
     /**
@@ -116,7 +147,7 @@ namespace com.botbench.battlespider
     {
         utils.debugLog ( "handleFoundBattleSpider: Found Spider: " + device.name,  spiderDebug );
 
-        if ( bConnected || bConnecting )
+        if ( connectionState != tConnectionState.searching )
             return;
 
         connectToBattleSpider ( device.id );
@@ -134,8 +165,7 @@ namespace com.botbench.battlespider
         throttleValue = 0;
         turningValue = 0;
 
-        bConnecting = false;
-        bConnected = true;
+        connectionState = tConnectionState.connected;
 
         // Subscribe to the RX characteristic
         ble.startNotification ( device.id, bluefruitBLEInfo.serviceUUID, bluefruitBLEInfo.rxCharacteristic, ( rawData: ArrayBuffer ) => handleRXData ( rawData ) );
@@ -154,8 +184,7 @@ namespace com.botbench.battlespider
     {
         utils.debugLog ( "handleDisconnectedSpider",  spiderDebug );
 
-        bConnecting = false;
-        bConnected = false;
+        connectionState = tConnectionState.disconnected;
 
         stopTransmitLoop();
 
@@ -206,7 +235,7 @@ namespace com.botbench.battlespider
 
         stopTransmitLoop();
 
-        if ( bConnected )
+        if ( connectionState == tConnectionState.connected )
         {
             transmitTimer = setInterval ( () => {
                 transmitData();
@@ -243,7 +272,7 @@ namespace com.botbench.battlespider
         dataPacket [ 0 ] |= joyPadToSpiderSpeed ( turningValue ) << 4;
 
         // Send the data packet, fire and forget
-        if ( bConnected )
+        if ( connectionState == tConnectionState.connected )
             ble.writeWithoutResponse ( spiderDeviceID, bluefruitBLEInfo.serviceUUID, bluefruitBLEInfo.txCharacteristic, dataPacket.buffer );
     }
 
