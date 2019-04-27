@@ -137,6 +137,7 @@ namespace com.botbench.battlespider
         bConnecting = false;
         bConnected = true;
 
+        // Subscribe to the RX characteristic
         ble.startNotification ( device.id, bluefruitBLEInfo.serviceUUID, bluefruitBLEInfo.rxCharacteristic, ( rawData: ArrayBuffer ) => handleRXData ( rawData ) );
 
         $ ( "#controlButton" ).removeClass ( "fadeinout" );
@@ -273,6 +274,10 @@ namespace com.botbench.battlespider
             return 8;
     }
 
+    /**
+    * Handler for incoming battery values
+    * @param {number} rawData the battery voltage value
+    */
     function handleRXData ( rawData: ArrayBuffer )
     {
         utils.debugLog ( "handleRXData: rawData length: " + rawData.byteLength,  spiderDebug );
@@ -286,7 +291,6 @@ namespace com.botbench.battlespider
                 utils.debugLog ( "handleRXData: voltage: " + voltageLevel,  spiderDebug );
 
                 setBatteryIcon ( voltageLevel );
-
             }
             else
             {
@@ -299,6 +303,10 @@ namespace com.botbench.battlespider
         }
     }
 
+    /**
+    * Set the battery icon according to the battery voltage
+    * @param {number} batteryVoltage the battery voltage value
+    */
     function setBatteryIcon ( batteryVoltage: number )
     {
         utils.debugLog ( "setBatteryIcon: batteryVoltage: " + batteryVoltage,  spiderDebug );
