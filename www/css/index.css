@@ -94,3 +94,41 @@ a:hover, a:visited, a:link, a:active
         filter: brightness(80%);
     }
 } 
+
+#battIcon
+{
+    position: fixed;
+    height: 10vh;
+    width: 15vh;
+    top: 10px;
+    right: 10px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+}
+
+#battIcon.none
+{
+    background-color: transparent;
+}
+
+#battIcon.green
+{
+    background-image: url("../img/batt_green.png");
+}
+
+#battIcon.yellow
+{
+    background-image: url("../img/batt_yellow.png");
+}
+
+#battIcon.brown
+{
+    background-image: url("../img/batt_brown.png");
+}
+
+#battIcon.red
+{
+    background-image: url("../img/batt_red.png");
+}

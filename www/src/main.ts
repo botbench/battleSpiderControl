@@ -137,6 +137,8 @@ namespace com.botbench.battlespider
         bConnecting = false;
         bConnected = true;
 
+        ble.startNotification ( device.id, bluefruitBLEInfo.serviceUUID, bluefruitBLEInfo.rxCharacteristic, ( rawData: ArrayBuffer ) => handleRXData ( rawData ) );
+
         $ ( "#controlButton" ).removeClass ( "fadeinout" );
         $ ( "#controlButton" ).removeClass ( "start" );
         $ ( "#controlButton" ).addClass ( "stop" );
@@ -159,6 +161,9 @@ namespace com.botbench.battlespider
         $ ( "#controlButton" ).removeClass ( "fadeinout" );
         $ ( "#controlButton" ).removeClass ( "stop" );
         $ ( "#controlButton" ).addClass ( "start" );
+
+        // Make the battery icon go away
+        $ ( "#battIcon" ).removeClass();
     }
 
     /**
@@ -266,5 +271,48 @@ namespace com.botbench.battlespider
             return 7;
         else
             return 8;
+    }
+
+    function handleRXData ( rawData: ArrayBuffer )
+    {
+        utils.debugLog ( "handleRXData: rawData length: " + rawData.byteLength,  spiderDebug );
+
+        if ( utils.isDefAndNotNull ( rawData ) && rawData.byteLength > 0 )
+        {
+            let cookedData = new Uint8Array ( rawData );
+            if ( utils.isDefAndNotNull ( cookedData ) && cookedData.length > 0 )
+            {
+                let voltageLevel = cookedData [ 0 ] / 10;
+                utils.debugLog ( "handleRXData: voltage: " + voltageLevel,  spiderDebug );
+
+                setBatteryIcon ( voltageLevel );
+
+            }
+            else
+            {
+                utils.debugLog ( "handleRXData: could not convert voltage",  spiderDebug );
+            }
+        }
+        else
+        {
+            utils.debugLog ( "handleRXData: rawData not valid",  spiderDebug );
+        }
+    }
+
+    function setBatteryIcon ( batteryVoltage: number )
+    {
+        utils.debugLog ( "setBatteryIcon: batteryVoltage: " + batteryVoltage,  spiderDebug );
+
+        // Remove all the classes
+        $ ( "#battIcon" ).removeClass();
+
+        if ( batteryVoltage >= 4.0 )
+            $ ( "#battIcon" ).addClass ( "green" );
+        else if ( batteryVoltage >= 3.8 )
+            $ ( "#battIcon" ).addClass ( "orange" );
+        else if ( batteryVoltage >= 3.6 )
+            $ ( "#battIcon" ).addClass ( "brown" );
+        else 
+            $ ( "#battIcon" ).addClass ( "red" );
     }
 }
