@@ -24,17 +24,25 @@
 #include "BluefruitConfig.h"
 
 // Pins for the motor controller
-int PWMA = 13;
-int PWMB = 11;
+#define PWMA 13
+#define PWMB 11
+#define AOUT1 A4
+#define AOUT2 A5
+#define BOUT1 6
+#define BOUT2 5
 
-int AOUT1 = A4;
-int AOUT2 = A5;
+// Pin for measuring battery voltage
+#define VBATPIN A9
 
-int BOUT1 = 6;
-int BOUT2 = 5;
+unsigned long int messageTimer = 0;
+unsigned long int batterySampleTimer = 0;
+unsigned long int batteryMessageTimer = 0;
 
+// For the rolling average
+#define NUM_SAMPLES 50
+float samples [ NUM_SAMPLES ];
+unsigned int sampleIndex = 0;
 
-unsigned long int startTime = 0;
 /*=========================================================================
     APPLICATION SETTINGS
     -----------------------------------------------------------------------*/
@@ -73,6 +81,10 @@ void setup(void)
   pinMode(BOUT1, OUTPUT);
   pinMode(BOUT2, OUTPUT);
 
+  // Preseed the samples array
+  for ( int i = 0; i < NUM_SAMPLES; i++ )
+    samples [ i ] = 4.0;
+    
   Serial.begin(115200);
   Serial.println(F("Adafruit Bluefruit Command <-> Data Mode Example"));
   Serial.println(F("------------------------------------------------"));
@@ -135,14 +147,18 @@ void setup(void)
 */
 void loop(void)
 {
+  // Current time
+  unsigned int currentTime = millis();
+  
   // check if data is available, if so, process it
   if ( ble.available() )
   {
     byte c = ble.read();
 
-
-
+    // First nibble holds the throttle speed
     byte throttleSpeed = ( c & 0x0F ) >> 0;
+
+    // Second nibble holds the turning speed
     byte turningSpeed  = ( c & 0xF0 ) >> 4;
 
     int throttlePWM = serialToPWM ( throttleSpeed );
@@ -164,20 +180,46 @@ void loop(void)
     doTurn ( turningPWM );
 
     // Reset the timer
-    startTime = millis();
+    messageTimer = currentTime;
   }
   else
   {
-    // Get the current time
-    unsigned long currentTime = millis();
-
     // Check if more than 300ms has elapsed since the last message,
     // if so, stop
-    if ( ( currentTime - startTime ) > 300 )
+    if ( ( currentTime - messageTimer ) > 300 )
     {
       doMotion ( 0 );
       doTurn ( 0 );
     }
+  }
+
+  // Check if we need to measure the battery level
+  if ( ( currentTime - batterySampleTimer ) > 50 )
+  {
+    samples [ sampleIndex ] = getBatteryVoltage();
+
+    // Reset the index if we're coming to the end
+    if ( ++sampleIndex == NUM_SAMPLES )
+      sampleIndex = 0;
+
+    // reset the timer
+    batterySampleTimer = currentTime;
+  }
+
+  if ( currentTime - batteryMessageTimer > 1000 )
+  {
+
+    // Battery voltage in 10ths of a volt, i.e. 3.3V => 33
+    unsigned char battV = round ( getAverage() * 10 );
+    ble.write ( battV );
+
+// For debugging
+#if 0
+    Serial.print("VBat: " ); Serial.println ( battV );
+#endif
+
+    // Reset the timer
+    batteryMessageTimer = currentTime;
   }
 }
 
@@ -248,4 +290,33 @@ int serialToPWM ( char serialValue )
     case 7: return 191;
     case 8: return 255;
   }
+}
+
+/**
+* Get the voltage level, in mV
+* @return {int} the voltage level in mV
+*/
+float getBatteryVoltage()
+{
+  float measuredBatteryVoltage = analogRead(VBATPIN);
+  measuredBatteryVoltage *= 2;    // we divided by 2, so multiply back
+  measuredBatteryVoltage *= 3.3;  // Multiply by 3.3V, our reference voltage
+  measuredBatteryVoltage /= 1024; // Convert to voltage
+  return measuredBatteryVoltage;
+}
+
+/**
+* Get the average of the samples
+* @return {int} the sample average
+*/
+float getAverage()
+{
+  float total = 0;
+  
+  for ( int i = 0; i < NUM_SAMPLES; i++)
+  {
+    total += samples [i];
+  }
+  
+  return total / NUM_SAMPLES;
 }
