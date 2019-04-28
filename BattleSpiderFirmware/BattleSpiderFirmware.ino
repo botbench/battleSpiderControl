@@ -293,8 +293,8 @@ int serialToPWM ( char serialValue )
 }
 
 /**
-* Get the voltage level, in mV
-* @return {int} the voltage level in mV
+* Get the voltage level, in V
+* @return {int} the voltage level in V
 */
 float getBatteryVoltage()
 {
